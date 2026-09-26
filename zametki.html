@@ -3,23 +3,89 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f5f5f7">
+  <meta name="theme-color" content="#f5f5f7" id="themeColor">
   <title>Заметки</title>
+
+  <script>
+    // Применяем тему до появления интерфейса, чтобы не было белой вспышки.
+    try {
+      const savedTheme = localStorage.getItem("notes-theme");
+      document.documentElement.dataset.theme =
+        savedTheme === "dark" ? "dark" : "light";
+    } catch {
+      document.documentElement.dataset.theme = "light";
+    }
+  </script>
+
   <style>
     :root {
+      color-scheme: light;
+
+      --page: #f5f5f7;
+      --sidebar: #ececf0;
+      --surface: #ffffff;
+      --surface-soft: #f5f5f7;
+      --search: #eaeaee;
+      --hover: #e6e6eb;
+      --border: #e7e7ec;
+
+      --text: #242428;
+      --text-soft: #494951;
+      --muted: #898992;
+      --placeholder: #b0b0b8;
+
+      --accent: #f4c543;
+      --accent-hover: #ecc03e;
+      --accent-text: #352900;
+
+      --shadow: 0 8px 25px #2727330a;
+      --shadow-hover: 0 18px 38px #27273318;
+      --focus: #ddb43f;
+
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      color: #242428;
-      background: #f5f5f7;
       font-synthesis: none;
+      background: var(--page);
+      color: var(--text);
+    }
+
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+
+      --page: #111218;
+      --sidebar: #191a22;
+      --surface: #20212b;
+      --surface-soft: #292a36;
+      --search: #262731;
+      --hover: #30313e;
+      --border: #363743;
+
+      --text: #f1f1f5;
+      --text-soft: #d0d0d9;
+      --muted: #a0a0af;
+      --placeholder: #747582;
+
+      --accent: #f4c543;
+      --accent-hover: #ffd35d;
+      --accent-text: #342800;
+
+      --shadow: 0 8px 26px #00000024;
+      --shadow-hover: 0 18px 42px #00000050;
+      --focus: #f4c543;
     }
 
     * {
       box-sizing: border-box;
     }
 
+    html {
+      background: var(--page);
+    }
+
     body {
       margin: 0;
       min-height: 100vh;
+      background: var(--page);
+      color: var(--text);
     }
 
     button,
@@ -42,6 +108,37 @@
       display: none !important;
     }
 
+    button:focus-visible,
+    input:focus-visible,
+    textarea:focus-visible,
+    select:focus-visible {
+      outline: 2px solid var(--focus);
+      outline-offset: 2px;
+    }
+
+    body,
+    .sidebar,
+    .main,
+    .editor-screen,
+    .editor-topbar,
+    .editor-bottom,
+    .card,
+    .icon-btn,
+    .soft-btn,
+    .nav-item,
+    .popover,
+    .search,
+    .meta input,
+    .meta select,
+    .check-row input[type="text"],
+    .attachment {
+      transition:
+        background-color .32s ease,
+        color .32s ease,
+        border-color .32s ease,
+        box-shadow .32s ease;
+    }
+
     .app {
       display: grid;
       grid-template-columns: 270px minmax(0, 1fr);
@@ -52,32 +149,41 @@
       position: sticky;
       top: 0;
       height: 100vh;
-      padding: 32px 16px;
-      background: #ececf0;
-      border-right: 1px solid #dedee3;
+      padding: 24px 16px;
+      background: var(--sidebar);
+      border-right: 1px solid var(--border);
       display: flex;
       flex-direction: column;
-      gap: 28px;
+      gap: 29px;
     }
 
-    .brand {
-      padding: 0 14px;
-      font-size: 27px;
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding-left: 13px;
+    }
+
+    .brand,
+    .mobile-brand {
+      font-size: 25px;
       font-weight: 760;
       letter-spacing: -.9px;
+      white-space: nowrap;
     }
 
     .brand span,
     .mobile-brand span {
-      color: #e5a900;
+      color: #e6af1f;
     }
 
     .side-label {
       margin: 0 14px 10px;
-      color: #85858d;
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: .08em;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 750;
+      letter-spacing: .09em;
       text-transform: uppercase;
     }
 
@@ -88,25 +194,31 @@
       border-radius: 11px;
       background: transparent;
       text-align: left;
-      color: #424249;
+      color: var(--text-soft);
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 8px;
+      transition:
+        background-color .25s ease,
+        color .25s ease,
+        transform .25s ease;
     }
 
     .nav-item:hover {
-      background: #e2e2e8;
+      background: var(--hover);
+      transform: translateX(3px);
     }
 
     .nav-item.active {
-      background: #fff;
-      color: #1e1e23;
+      background: var(--surface);
+      color: var(--text);
       font-weight: 650;
+      box-shadow: var(--shadow);
     }
 
     .nav-item .count {
-      color: #92929a;
+      color: var(--muted);
       font-size: 13px;
     }
 
@@ -117,7 +229,8 @@
     .main {
       width: min(100%, 1120px);
       margin: 0 auto;
-      padding: 34px 44px 70px;
+      padding: 27px 44px 70px;
+      animation: content-in .38s ease both;
     }
 
     .topbar,
@@ -131,7 +244,7 @@
     }
 
     .topbar {
-      margin-bottom: 37px;
+      margin-bottom: 38px;
     }
 
     .top-actions {
@@ -140,40 +253,71 @@
       gap: 10px;
     }
 
-    .mobile-brand {
+    .mobile-brand,
+    .mobile-only {
       display: none;
     }
 
     .icon-btn {
-      width: 39px;
-      height: 39px;
-      border: 0;
-      border-radius: 11px;
-      background: #fff;
-      color: #4a4a51;
-      font-size: 20px;
+      width: 40px;
+      height: 40px;
+      flex: 0 0 40px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--surface);
+      color: var(--text-soft);
+      font-size: 19px;
       display: grid;
       place-items: center;
-      box-shadow: 0 2px 10px #20202808;
+      box-shadow: var(--shadow);
+      transition:
+        transform .22s ease,
+        background-color .3s ease,
+        color .3s ease,
+        border-color .3s ease,
+        box-shadow .3s ease;
     }
 
-    .icon-btn:hover,
-    .soft-btn:hover {
-      background: #eeeeef;
+    .icon-btn:hover {
+      transform: translateY(-2px) rotate(-5deg);
+      background: var(--surface-soft);
+      box-shadow: var(--shadow-hover);
+    }
+
+    .theme-toggle {
+      font-size: 21px;
+    }
+
+    .primary-btn,
+    .soft-btn {
+      transition:
+        transform .22s ease,
+        background-color .26s ease,
+        color .26s ease,
+        box-shadow .26s ease;
     }
 
     .primary-btn {
       border: 0;
       border-radius: 12px;
       padding: 11px 18px;
-      background: #f4c543;
-      color: #342800;
-      font-weight: 700;
-      box-shadow: 0 4px 12px #dfaa3030;
+      background: var(--accent);
+      color: var(--accent-text);
+      font-weight: 720;
+      box-shadow: 0 5px 15px #dfaa3030;
     }
 
     .primary-btn:hover {
-      background: #ecc03e;
+      transform: translateY(-2px);
+      background: var(--accent-hover);
+      box-shadow: 0 9px 19px #dfaa3045;
+    }
+
+    .primary-btn:active,
+    .soft-btn:active,
+    .icon-btn:active,
+    .card:active {
+      transform: scale(.97);
     }
 
     .heading h1 {
@@ -185,7 +329,7 @@
 
     .subtitle {
       margin: 8px 0 0;
-      color: #909098;
+      color: var(--muted);
       font-size: 14px;
     }
 
@@ -197,13 +341,18 @@
       border: 1px solid transparent;
       border-radius: 12px;
       outline: none;
-      background: #eaeaee;
-      color: #242428;
+      background: var(--search);
+      color: var(--text);
+    }
+
+    .search::placeholder {
+      color: var(--muted);
     }
 
     .search:focus {
-      border-color: #e4bb52;
-      background: #fff;
+      border-color: var(--focus);
+      background: var(--surface);
+      box-shadow: 0 0 0 4px #f4c5431c;
     }
 
     .grid {
@@ -217,17 +366,23 @@
       min-width: 0;
       min-height: 165px;
       padding: 19px;
-      border: 1px solid #ebebee;
+      border: 1px solid var(--border);
       border-radius: 17px;
-      background: #fff;
+      background: var(--surface);
+      color: var(--text);
       text-align: left;
-      box-shadow: 0 5px 18px #29293608;
-      transition: transform .15s, box-shadow .15s;
+      box-shadow: var(--shadow);
+      animation: card-in .42s ease both;
+      transition:
+        transform .23s ease,
+        box-shadow .23s ease,
+        background-color .32s ease,
+        border-color .32s ease;
     }
 
     .card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 9px 25px #29293613;
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-hover);
     }
 
     .card-title {
@@ -246,7 +401,7 @@
       overflow: hidden;
       white-space: pre-wrap;
       overflow-wrap: anywhere;
-      color: #74747d;
+      color: var(--muted);
       font-size: 14px;
       line-height: 1.5;
       margin: 13px 0 22px;
@@ -257,30 +412,31 @@
       flex-wrap: wrap;
       align-items: center;
       gap: 6px;
-      color: #a0a0a8;
+      color: var(--muted);
       font-size: 12px;
     }
 
     .badge {
       border-radius: 7px;
       padding: 4px 7px;
-      background: #fff5d8;
-      color: #9b7400;
+      background: #e6ad2020;
+      color: #bc9018;
     }
 
     .empty {
       grid-column: 1 / -1;
       padding: 75px 20px;
-      border: 1px dashed #d9d9df;
+      border: 1px dashed var(--border);
       border-radius: 17px;
       text-align: center;
-      color: #85858f;
+      color: var(--muted);
+      animation: content-in .4s ease both;
     }
 
     .empty strong {
       display: block;
       margin-bottom: 8px;
-      color: #484850;
+      color: var(--text-soft);
       font-size: 19px;
     }
 
@@ -295,10 +451,11 @@
       right: 0;
       width: 220px;
       padding: 6px;
-      border: 1px solid #e8e8ec;
+      border: 1px solid var(--border);
       border-radius: 13px;
-      background: #fff;
-      box-shadow: 0 14px 40px #22223024;
+      background: var(--surface);
+      box-shadow: var(--shadow-hover);
+      animation: pop-in .18s ease both;
     }
 
     .popover button {
@@ -309,15 +466,15 @@
       border-radius: 8px;
       background: transparent;
       text-align: left;
-      color: #33333a;
+      color: var(--text);
       font-size: 14px;
     }
 
     .popover button:hover {
-      background: #f5f5f7;
+      background: var(--surface-soft);
     }
 
-    /* Редактор теперь занимает ВЕСЬ экран, а не открывается модальным окном. */
+    /* Редактор занимает весь экран страницы. */
     .editor-screen {
       position: fixed;
       z-index: 50;
@@ -325,18 +482,24 @@
       width: 100%;
       height: 100vh;
       height: 100dvh;
-      background: #fff;
+      background: var(--surface);
       display: flex;
       flex-direction: column;
       overflow: hidden;
+      animation: editor-in .35s cubic-bezier(.2, .75, .2, 1) both;
+    }
+
+    .editor-screen.closing {
+      animation: editor-out .25s ease both;
+      pointer-events: none;
     }
 
     .editor-topbar {
       flex: 0 0 auto;
       min-height: 72px;
       padding: 12px clamp(20px, 4vw, 58px);
-      border-bottom: 1px solid #efeff1;
-      background: #fff;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
     }
 
     .editor-topbar-left,
@@ -353,7 +516,7 @@
     }
 
     .editor-status {
-      color: #a1a1a9;
+      color: var(--muted);
       font-size: 13px;
     }
 
@@ -361,12 +524,17 @@
       border: 0;
       border-radius: 10px;
       padding: 10px 13px;
-      background: #f5f5f7;
-      color: #45454d;
+      background: var(--surface-soft);
+      color: var(--text-soft);
+    }
+
+    .soft-btn:hover {
+      transform: translateY(-2px);
+      background: var(--hover);
     }
 
     .danger {
-      color: #dc4747;
+      color: #e86666;
     }
 
     .editor-content {
@@ -381,16 +549,19 @@
       width: min(100%, 960px);
       min-height: 100%;
       margin: 0 auto;
-      padding: clamp(28px, 5vw, 70px) clamp(22px, 5vw, 56px) 75px;
+      padding:
+        clamp(28px, 5vw, 70px)
+        clamp(22px, 5vw, 56px)
+        75px;
       display: flex;
       flex-direction: column;
     }
 
     .editor-kicker {
       margin-bottom: 20px;
-      color: #a5a5ae;
+      color: var(--muted);
       font-size: 13px;
-      font-weight: 600;
+      font-weight: 650;
     }
 
     .title-input {
@@ -399,7 +570,7 @@
       padding: 0 0 20px;
       border: 0;
       outline: 0;
-      color: #242428;
+      color: var(--text);
       background: transparent;
       font-size: clamp(34px, 5vw, 54px);
       font-weight: 750;
@@ -408,7 +579,7 @@
 
     .title-input::placeholder,
     .text-input::placeholder {
-      color: #b1b1b8;
+      color: var(--placeholder);
     }
 
     .text-row {
@@ -427,7 +598,7 @@
       border: 0;
       outline: 0;
       background: transparent;
-      color: #37373e;
+      color: var(--text-soft);
       font-size: 17px;
       line-height: 1.8;
     }
@@ -438,11 +609,17 @@
       height: 43px;
       border: 0;
       border-radius: 50%;
-      background: #f4c543;
-      color: #3c300c;
+      background: var(--accent);
+      color: var(--accent-text);
       font-size: 29px;
       line-height: 1;
       box-shadow: 0 4px 13px #dfaa3035;
+      transition: transform .24s ease, background-color .24s ease;
+    }
+
+    .attach-plus:hover {
+      transform: rotate(90deg) scale(1.06);
+      background: var(--accent-hover);
     }
 
     .attach-menu {
@@ -451,7 +628,7 @@
 
     .section-label {
       margin: 22px 0 12px;
-      color: #888891;
+      color: var(--muted);
       font-size: 12px;
       font-weight: 700;
       text-transform: uppercase;
@@ -472,9 +649,10 @@
       flex: 1;
       min-width: 0;
       padding: 10px;
-      border: 1px solid #eeeeef;
+      border: 1px solid var(--border);
       border-radius: 9px;
-      outline-color: #e4bb52;
+      background: var(--surface);
+      color: var(--text);
     }
 
     .check-row input[type="checkbox"] {
@@ -494,7 +672,7 @@
       width: 128px;
       min-height: 95px;
       border-radius: 11px;
-      background: #f3f3f5;
+      background: var(--surface-soft);
       overflow: hidden;
     }
 
@@ -508,7 +686,7 @@
     .attachment a {
       display: block;
       padding: 15px 10px;
-      color: #4d4d58;
+      color: var(--text-soft);
       font-size: 12px;
       overflow-wrap: anywhere;
     }
@@ -521,7 +699,7 @@
       height: 24px;
       border: 0;
       border-radius: 50%;
-      background: #26262bcf;
+      background: #26262bd9;
       color: #fff;
       line-height: 1;
     }
@@ -532,13 +710,13 @@
       gap: 17px;
       margin-top: 35px;
       padding-top: 27px;
-      border-top: 1px solid #efeff1;
+      border-top: 1px solid var(--border);
     }
 
     .meta label {
       display: grid;
       gap: 9px;
-      color: #777780;
+      color: var(--muted);
       font-size: 13px;
     }
 
@@ -548,18 +726,21 @@
       min-width: 0;
       height: 43px;
       padding: 0 11px;
-      border: 1px solid #e7e7eb;
+      border: 1px solid var(--border);
       border-radius: 10px;
-      outline-color: #e4bb52;
-      background: #fff;
-      color: #37373e;
+      background: var(--surface);
+      color: var(--text);
       font-size: 14px;
+    }
+
+    .meta input::placeholder {
+      color: var(--placeholder);
     }
 
     .editor-bottom {
       flex: 0 0 auto;
-      border-top: 1px solid #efeff1;
-      background: #fff;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
     }
 
     .editor-actions {
@@ -583,15 +764,88 @@
       max-width: calc(100vw - 28px);
       padding: 11px 17px;
       border-radius: 11px;
-      background: #2b2b32;
+      background: #33343d;
       color: #fff;
       text-align: center;
       font-size: 14px;
-      box-shadow: 0 8px 24px #0003;
+      box-shadow: 0 8px 24px #0004;
+      animation: toast-in .25s ease both;
     }
 
     .sidebar-backdrop {
       display: none;
+    }
+
+    @keyframes content-in {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes card-in {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes pop-in {
+      from {
+        opacity: 0;
+        transform: translateY(-6px) scale(.97);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    @keyframes editor-in {
+      from {
+        opacity: 0;
+        transform: translateY(20px) scale(.985);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    @keyframes editor-out {
+      from {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+
+      to {
+        opacity: 0;
+        transform: translateY(14px) scale(.985);
+      }
+    }
+
+    @keyframes toast-in {
+      from {
+        opacity: 0;
+        transform: translate(-50%, 8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
     }
 
     @media (max-width: 700px) {
@@ -605,8 +859,10 @@
         left: 0;
         width: min(82vw, 290px);
         transform: translateX(-100%);
-        transition: transform .2s;
-        box-shadow: 8px 0 28px #0001;
+        transition:
+          transform .28s cubic-bezier(.2, .75, .2, 1),
+          background-color .32s ease;
+        box-shadow: 8px 0 28px #0002;
       }
 
       .sidebar.open {
@@ -619,7 +875,7 @@
         inset: 0;
         display: block;
         border: 0;
-        background: #0006;
+        background: #0008;
       }
 
       .main {
@@ -630,9 +886,12 @@
         margin-bottom: 28px;
       }
 
-      .mobile-brand {
+      .mobile-brand,
+      .mobile-only {
         display: block;
-        font-weight: 750;
+      }
+
+      .mobile-brand {
         font-size: 19px;
       }
 
@@ -658,6 +917,7 @@
         display: none;
       }
 
+      .editor-topbar-left,
       .editor-topbar-right {
         gap: 6px;
       }
@@ -694,8 +954,12 @@
       }
     }
 
-    @media (max-width: 390px) {
+    @media (max-width: 430px) {
       #fullscreenButton {
+        width: 40px;
+        height: 40px;
+        overflow: hidden;
+        white-space: nowrap;
         font-size: 0;
       }
 
@@ -704,12 +968,32 @@
         font-size: 19px;
       }
     }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: .01ms !important;
+        transition-duration: .01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
   </style>
 </head>
+
 <body>
   <div class="app">
     <aside class="sidebar" id="sidebar">
-      <div class="brand">Заметки<span>.</span></div>
+      <div class="sidebar-header">
+        <div class="brand">Заметки<span>.</span></div>
+
+        <button
+          class="icon-btn theme-toggle"
+          type="button"
+          title="Переключить тему"
+          aria-label="Переключить тему"
+        >☾</button>
+      </div>
 
       <nav>
         <div class="side-label">Библиотека</div>
@@ -752,10 +1036,18 @@
       <div class="topbar">
         <div class="top-actions">
           <button
-            class="icon-btn"
+            class="icon-btn mobile-only"
             id="mobileMenu"
             aria-label="Открыть меню"
           >☰</button>
+
+          <!-- На компьютере кнопка расположена слева вверху страницы. -->
+          <button
+            class="icon-btn theme-toggle"
+            type="button"
+            title="Переключить тему"
+            aria-label="Переключить тему"
+          >☾</button>
 
           <span class="mobile-brand">
             Заметки<span>.</span>
@@ -795,6 +1087,7 @@
       <div class="heading">
         <div>
           <h1 id="pageTitle">Все заметки</h1>
+
           <p class="subtitle" id="pageSubtitle">
             Ваши мысли — в одном месте.
           </p>
@@ -813,7 +1106,6 @@
     </main>
   </div>
 
-  <!-- Полноэкранный редактор -->
   <section
     class="editor-screen"
     id="editorScreen"
@@ -822,6 +1114,14 @@
   >
     <header class="editor-topbar">
       <div class="editor-topbar-left">
+        <!-- Переключатель остаётся доступным в редакторе. -->
+        <button
+          class="icon-btn theme-toggle"
+          type="button"
+          title="Переключить тему"
+          aria-label="Переключить тему"
+        >☾</button>
+
         <button class="soft-btn" id="closeEditor">
           ← Назад
         </button>
@@ -875,21 +1175,10 @@
             >+</button>
 
             <div class="popover attach-menu" id="attachMenu" hidden>
-              <button id="addImage">
-                ▧ &nbsp; Картинку
-              </button>
-
-              <button id="addFile">
-                ▤ &nbsp; Файл
-              </button>
-
-              <button id="addLink">
-                ↗ &nbsp; Ссылку
-              </button>
-
-              <button id="addCheck">
-                ☑ &nbsp; Пункт списка
-              </button>
+              <button id="addImage">▧ &nbsp; Картинку</button>
+              <button id="addFile">▤ &nbsp; Файл</button>
+              <button id="addLink">↗ &nbsp; Ссылку</button>
+              <button id="addCheck">☑ &nbsp; Пункт списка</button>
             </div>
           </div>
         </div>
@@ -974,8 +1263,7 @@
 
     const $ = selector => document.querySelector(selector);
 
-    // То же имя базы, что и в предыдущей версии:
-    // сохранённые заметки продолжают отображаться.
+    // Название базы прежнее: существующие заметки не теряются.
     const DB_NAME = "beautiful-notes-db";
     const MAX_FILE_BYTES = 5 * 1024 * 1024;
 
@@ -985,6 +1273,7 @@
     let currentView = "all";
     let draft = null;
     let toastTimer;
+    let closeTimer;
 
     function uid() {
       return crypto.randomUUID
@@ -1002,15 +1291,44 @@
       })[char]);
     }
 
-    function notify(message) {
-      const el = $("#toast");
+    function applyTheme(theme) {
+      const dark = theme === "dark";
 
-      el.textContent = message;
-      el.hidden = false;
+      document.documentElement.dataset.theme =
+        dark ? "dark" : "light";
+
+      $("#themeColor").content =
+        dark ? "#111218" : "#f5f5f7";
+
+      document.querySelectorAll(".theme-toggle").forEach(button => {
+        button.textContent = dark ? "☀" : "☾";
+        button.title = dark
+          ? "Включить светлую тему"
+          : "Включить тёмную тему";
+
+        button.setAttribute("aria-label", button.title);
+      });
+
+      try {
+        localStorage.setItem(
+          "notes-theme",
+          dark ? "dark" : "light"
+        );
+      } catch {
+        // Интерфейс продолжит работать без localStorage.
+      }
+    }
+
+    function notify(message) {
+      const element = $("#toast");
+
+      element.textContent = message;
+      element.hidden = false;
 
       clearTimeout(toastTimer);
+
       toastTimer = setTimeout(() => {
-        el.hidden = true;
+        element.hidden = true;
       }, 3500);
     }
 
@@ -1175,7 +1493,7 @@
         } · Ваши мысли — в одном месте.`;
 
       $("#notesGrid").innerHTML = shown.length
-        ? shown.map(note => {
+        ? shown.map((note, index) => {
             const preview =
               note.text?.trim() ||
               (
@@ -1200,6 +1518,7 @@
               <button
                 class="card"
                 data-id="${escapeHTML(note.id)}"
+                style="animation-delay: ${Math.min(index, 8) * 35}ms"
               >
                 <div class="card-title">
                   <span>
@@ -1265,20 +1584,24 @@
       }
     ) {
       const row = document.createElement("div");
+
       row.className = "check-row";
       row.dataset.id = item.id;
 
       const checkbox = document.createElement("input");
+
       checkbox.type = "checkbox";
       checkbox.checked = Boolean(item.done);
       checkbox.setAttribute("aria-label", "Пункт выполнен");
 
       const input = document.createElement("input");
+
       input.type = "text";
       input.placeholder = "Новый пункт";
       input.value = item.text || "";
 
       const remove = document.createElement("button");
+
       remove.className = "soft-btn";
       remove.type = "button";
       remove.textContent = "×";
@@ -1321,6 +1644,7 @@
 
       draft.attachments.forEach((attachment, index) => {
         const box = document.createElement("div");
+
         box.className = "attachment";
 
         if (attachment.kind === "image") {
@@ -1374,12 +1698,16 @@
 
     function updatePinButton() {
       $("#pinNote").textContent =
-        draft.pinned
-          ? "★ Закреплено"
-          : "☆ Закрепить";
+        draft.pinned ? "★ Закреплено" : "☆ Закрепить";
     }
 
     function openEditor(note = null) {
+      clearTimeout(closeTimer);
+
+      const editor = $("#editorScreen");
+
+      editor.classList.remove("closing");
+
       draft = note
         ? structuredClone(note)
         : {
@@ -1410,8 +1738,8 @@
       $("#editorStatus").textContent =
         note ? "Редактирование" : "Новая заметка";
 
-      $("#noteTitle").value = draft.title;
-      $("#noteText").value = draft.text;
+      $("#noteTitle").value = draft.title || "";
+      $("#noteText").value = draft.text || "";
       $("#noteFolder").value = draft.folder || "";
       $("#noteTags").value = draft.tags.join(", ");
       $("#noteReminder").value = draft.reminder || "";
@@ -1426,7 +1754,8 @@
       updatePinButton();
 
       $("#attachMenu").hidden = true;
-      $("#editorScreen").hidden = false;
+
+      editor.hidden = false;
       $("#editorContent").scrollTop = 0;
 
       document.body.style.overflow = "hidden";
@@ -1435,7 +1764,13 @@
     }
 
     async function closeEditor() {
-      if (document.fullscreenElement === $("#editorScreen")) {
+      const editor = $("#editorScreen");
+
+      if (editor.hidden || editor.classList.contains("closing")) {
+        return;
+      }
+
+      if (document.fullscreenElement === editor) {
         try {
           await document.exitFullscreen();
         } catch (error) {
@@ -1443,25 +1778,34 @@
         }
       }
 
-      $("#editorScreen").hidden = true;
+      editor.classList.add("closing");
       $("#attachMenu").hidden = true;
 
-      document.body.style.overflow = "";
+      const reduceMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)"
+      ).matches;
 
-      draft = null;
+      closeTimer = setTimeout(() => {
+        editor.hidden = true;
+        editor.classList.remove("closing");
+
+        document.body.style.overflow = "";
+
+        draft = null;
+      }, reduceMotion ? 0 : 250);
     }
 
     async function toggleFullscreen() {
-      const screen = $("#editorScreen");
+      const editor = $("#editorScreen");
 
       try {
-        if (document.fullscreenElement === screen) {
+        if (document.fullscreenElement === editor) {
           await document.exitFullscreen();
-        } else if (screen.requestFullscreen) {
-          await screen.requestFullscreen();
+        } else if (editor.requestFullscreen) {
+          await editor.requestFullscreen();
         } else {
           notify(
-            "Этот браузер не поддерживает системный полноэкранный режим"
+            "Браузер не поддерживает системный полноэкранный режим"
           );
         }
       } catch (error) {
@@ -1475,7 +1819,7 @@
     }
 
     async function saveEditor() {
-      if (!draft) {
+      if (!draft || $("#editorScreen").classList.contains("closing")) {
         return;
       }
 
@@ -1516,9 +1860,9 @@
 
         notes = await getAllNotes();
 
+        render();
         await closeEditor();
 
-        render();
         notify("Заметка сохранена");
       } catch (error) {
         console.error(error);
@@ -1547,6 +1891,7 @@
         const image = new Image();
 
         image.src = original;
+
         await image.decode();
 
         const scale = Math.min(
@@ -1862,6 +2207,21 @@
     }
 
     async function init() {
+      applyTheme(
+        document.documentElement.dataset.theme
+      );
+
+      document.querySelectorAll(".theme-toggle").forEach(button => {
+        button.onclick = () => {
+          const nextTheme =
+            document.documentElement.dataset.theme === "dark"
+              ? "light"
+              : "dark";
+
+          applyTheme(nextTheme);
+        };
+      });
+
       try {
         db = await openDB();
         notes = await getAllNotes();
@@ -2051,9 +2411,9 @@
 
             notes = await getAllNotes();
 
+            render();
             await closeEditor();
 
-            render();
             notify("Заметка удалена");
           } catch {
             notify(
@@ -2190,11 +2550,9 @@
           if (event.key === "Escape") {
             $("#mainMenu").hidden = true;
             $("#attachMenu").hidden = true;
+
             closeSidebar();
 
-            // В режиме браузера F11/Fullscreen
-            // первый Escape обычно выходит из него.
-            // Без него Escape возвращает к списку.
             if (
               !$("#editorScreen").hidden &&
               !document.fullscreenElement
