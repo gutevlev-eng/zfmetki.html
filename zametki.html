@@ -1,0 +1,1345 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f5f7">
+  <title>Заметки</title>
+  <style>
+    :root {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #242428;
+      background: #f5f5f7;
+      font-synthesis: none;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+    }
+
+    button, input, textarea, select {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    button:disabled {
+      cursor: default;
+      opacity: .5;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: 270px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      padding: 32px 16px;
+      background: #ececf0;
+      border-right: 1px solid #dedee3;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .brand {
+      padding: 0 14px;
+      font-size: 27px;
+      font-weight: 760;
+      letter-spacing: -.9px;
+    }
+
+    .brand span { color: #e5a900; }
+
+    .side-label {
+      margin: 0 14px 10px;
+      color: #85858d;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .nav-item {
+      width: 100%;
+      padding: 11px 14px;
+      border: 0;
+      border-radius: 11px;
+      background: transparent;
+      text-align: left;
+      color: #424249;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .nav-item:hover { background: #e2e2e8; }
+    .nav-item.active { background: #fff; color: #1e1e23; font-weight: 650; }
+
+    .nav-item .count { color: #92929a; font-size: 13px; }
+
+    .side-bottom {
+      margin-top: auto;
+    }
+
+    .main {
+      width: min(100%, 1120px);
+      margin: 0 auto;
+      padding: 34px 44px 70px;
+    }
+
+    .topbar, .heading, .editor-head, .editor-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .topbar { margin-bottom: 37px; }
+
+    .mobile-brand { display: none; }
+
+    .top-actions { display: flex; gap: 10px; }
+
+    .icon-btn {
+      width: 39px;
+      height: 39px;
+      border: 0;
+      border-radius: 11px;
+      background: #fff;
+      color: #4a4a51;
+      font-size: 20px;
+      display: grid;
+      place-items: center;
+      box-shadow: 0 2px 10px #20202808;
+    }
+
+    .icon-btn:hover, .soft-btn:hover { background: #f0f0f2; }
+
+    .primary-btn {
+      border: 0;
+      border-radius: 12px;
+      padding: 11px 18px;
+      background: #f4c543;
+      color: #342800;
+      font-weight: 700;
+      box-shadow: 0 4px 12px #dfaa3030;
+    }
+
+    .primary-btn:hover { background: #ecc03e; }
+
+    .heading h1 {
+      margin: 0;
+      font-size: clamp(32px, 5vw, 48px);
+      letter-spacing: -2px;
+      line-height: 1.1;
+    }
+
+    .subtitle {
+      margin: 8px 0 0;
+      color: #909098;
+      font-size: 14px;
+    }
+
+    .search {
+      width: 100%;
+      height: 46px;
+      margin: 26px 0 23px;
+      padding: 0 17px;
+      border: 1px solid transparent;
+      border-radius: 12px;
+      outline: none;
+      background: #eaeaee;
+      color: #242428;
+    }
+
+    .search:focus {
+      border-color: #e4bb52;
+      background: #fff;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(245px, 1fr));
+      gap: 15px;
+      align-items: start;
+    }
+
+    .card {
+      min-width: 0;
+      min-height: 165px;
+      padding: 19px;
+      border: 1px solid #ebebee;
+      border-radius: 17px;
+      background: #fff;
+      text-align: left;
+      box-shadow: 0 5px 18px #29293608;
+      transition: transform .15s, box-shadow .15s;
+    }
+
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 9px 25px #29293613;
+    }
+
+    .card-title {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 16px;
+      font-weight: 720;
+      overflow-wrap: anywhere;
+    }
+
+    .card-preview {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 3;
+      overflow: hidden;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      color: #74747d;
+      font-size: 14px;
+      line-height: 1.5;
+      margin: 13px 0 22px;
+    }
+
+    .card-footer {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+      color: #a0a0a8;
+      font-size: 12px;
+    }
+
+    .badge {
+      border-radius: 7px;
+      padding: 4px 7px;
+      background: #fff5d8;
+      color: #9b7400;
+    }
+
+    .empty {
+      grid-column: 1 / -1;
+      padding: 75px 20px;
+      border: 1px dashed #d9d9df;
+      border-radius: 17px;
+      text-align: center;
+      color: #85858f;
+    }
+
+    .empty strong {
+      display: block;
+      margin-bottom: 8px;
+      color: #484850;
+      font-size: 19px;
+    }
+
+    .popover-wrap { position: relative; }
+
+    .popover {
+      position: absolute;
+      z-index: 20;
+      top: calc(100% + 8px);
+      right: 0;
+      width: 220px;
+      padding: 6px;
+      border: 1px solid #e8e8ec;
+      border-radius: 13px;
+      background: #fff;
+      box-shadow: 0 14px 40px #22223024;
+    }
+
+    .popover[hidden], .overlay[hidden], .sidebar-backdrop[hidden] {
+      display: none !important;
+    }
+
+    .popover button {
+      display: block;
+      width: 100%;
+      padding: 10px 11px;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      text-align: left;
+      color: #33333a;
+      font-size: 14px;
+    }
+
+    .popover button:hover { background: #f5f5f7; }
+
+    .overlay {
+      position: fixed;
+      z-index: 50;
+      inset: 0;
+      padding: 18px;
+      background: #17171f77;
+      display: grid;
+      place-items: center;
+    }
+
+    .editor {
+      width: min(100%, 720px);
+      max-height: min(860px, calc(100vh - 36px));
+      display: flex;
+      flex-direction: column;
+      border-radius: 21px;
+      background: #fff;
+      box-shadow: 0 25px 90px #16161e3d;
+      overflow: hidden;
+    }
+
+    .editor-head {
+      padding: 17px 22px;
+      border-bottom: 1px solid #efeff1;
+    }
+
+    .editor-head strong { font-size: 16px; }
+
+    .soft-btn {
+      border: 0;
+      border-radius: 9px;
+      padding: 9px 11px;
+      background: #f5f5f7;
+      color: #45454d;
+    }
+
+    .danger { color: #dc4747; }
+
+    .editor-body {
+      overflow: auto;
+      padding: 23px;
+    }
+
+    .title-input {
+      display: block;
+      width: 100%;
+      padding: 4px 0 15px;
+      border: 0;
+      outline: 0;
+      color: #242428;
+      font-size: 28px;
+      font-weight: 750;
+      letter-spacing: -.8px;
+    }
+
+    .title-input::placeholder, .text-input::placeholder {
+      color: #b1b1b8;
+    }
+
+    .text-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .text-input {
+      width: 100%;
+      min-height: 150px;
+      padding: 6px 0;
+      resize: vertical;
+      border: 0;
+      outline: 0;
+      color: #37373e;
+      line-height: 1.6;
+    }
+
+    .attach-plus {
+      flex: 0 0 36px;
+      width: 36px;
+      height: 36px;
+      border: 0;
+      border-radius: 50%;
+      background: #f4c543;
+      color: #3c300c;
+      font-size: 27px;
+      line-height: 1;
+    }
+
+    .attach-menu { width: 190px; }
+
+    .section-label {
+      margin: 17px 0 10px;
+      color: #888891;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .checks { display: grid; gap: 8px; }
+
+    .check-row {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .check-row input[type="text"] {
+      flex: 1;
+      min-width: 0;
+      padding: 8px;
+      border: 1px solid #eeeeef;
+      border-radius: 8px;
+      outline-color: #e4bb52;
+    }
+
+    .check-row input[type="checkbox"] {
+      accent-color: #e3ae23;
+      width: 17px;
+      height: 17px;
+    }
+
+    .attachments {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .attachment {
+      position: relative;
+      width: 110px;
+      min-height: 85px;
+      border-radius: 10px;
+      background: #f3f3f5;
+      overflow: hidden;
+    }
+
+    .attachment img {
+      width: 110px;
+      height: 85px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .attachment a {
+      display: block;
+      padding: 13px 8px;
+      color: #4d4d58;
+      font-size: 12px;
+      overflow-wrap: anywhere;
+    }
+
+    .remove-attachment {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      width: 22px;
+      height: 22px;
+      border: 0;
+      border-radius: 50%;
+      background: #26262bbd;
+      color: #fff;
+      line-height: 1;
+    }
+
+    .meta {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .meta label {
+      display: grid;
+      gap: 7px;
+      color: #777780;
+      font-size: 12px;
+    }
+
+    .meta input, .meta select {
+      width: 100%;
+      min-width: 0;
+      height: 39px;
+      padding: 0 10px;
+      border: 1px solid #e7e7eb;
+      border-radius: 9px;
+      outline-color: #e4bb52;
+      background: #fff;
+      color: #37373e;
+      font-size: 14px;
+    }
+
+    .editor-actions {
+      padding: 15px 22px;
+      border-top: 1px solid #efeff1;
+    }
+
+    .editor-actions .left { display: flex; gap: 8px; }
+
+    .toast {
+      position: fixed;
+      z-index: 100;
+      left: 50%;
+      bottom: 22px;
+      transform: translateX(-50%);
+      max-width: calc(100vw - 28px);
+      padding: 11px 17px;
+      border-radius: 11px;
+      background: #2b2b32;
+      color: #fff;
+      text-align: center;
+      font-size: 14px;
+      box-shadow: 0 8px 24px #0003;
+    }
+
+    .toast[hidden] { display: none; }
+
+    .sidebar-backdrop { display: none; }
+
+    @media (max-width: 700px) {
+      .app { display: block; }
+
+      .sidebar {
+        position: fixed;
+        z-index: 42;
+        left: 0;
+        width: min(82vw, 290px);
+        transform: translateX(-100%);
+        transition: transform .2s;
+        box-shadow: 8px 0 28px #0001;
+      }
+
+      .sidebar.open { transform: translateX(0); }
+
+      .sidebar-backdrop {
+        position: fixed;
+        z-index: 41;
+        inset: 0;
+        display: block;
+        border: 0;
+        background: #0006;
+      }
+
+      .main { padding: 18px 17px 65px; }
+      .topbar { margin-bottom: 28px; }
+      .mobile-brand { display: block; font-weight: 750; font-size: 19px; }
+      .heading h1 { letter-spacing: -1.5px; }
+      .grid { grid-template-columns: 1fr; }
+      .card { min-height: 145px; }
+      .overlay { padding: 0; place-items: end center; }
+      .editor {
+        max-height: 94dvh;
+        border-radius: 20px 20px 0 0;
+      }
+      .meta { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">Заметки<span>.</span></div>
+
+      <nav>
+        <div class="side-label">Библиотека</div>
+        <button class="nav-item active" data-view="all">▦ &nbsp; Все заметки <span class="count" id="allCount">0</span></button>
+        <button class="nav-item" data-view="pinned">☆ &nbsp; Закреплённые <span class="count" id="pinnedCount">0</span></button>
+      </nav>
+
+      <div>
+        <div class="side-label">Папки</div>
+        <div id="folderNav"></div>
+        <button class="nav-item" id="addFolder">＋ &nbsp; Новая папка</button>
+      </div>
+
+      <div class="side-bottom">
+        <button class="nav-item" id="shareSide">↗ &nbsp; Поделиться списком</button>
+      </div>
+    </aside>
+
+    <button class="sidebar-backdrop" id="sidebarBackdrop" hidden aria-label="Закрыть меню"></button>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="top-actions">
+          <button class="icon-btn" id="mobileMenu" aria-label="Открыть меню">☰</button>
+          <span class="mobile-brand">Заметки<span style="color:#e5a900">.</span></span>
+        </div>
+
+        <div class="top-actions">
+          <div class="popover-wrap">
+            <button class="icon-btn" id="menuButton" aria-label="Меню" aria-expanded="false">⋯</button>
+            <div class="popover" id="mainMenu" hidden>
+              <button id="shareMenu">↗ &nbsp; Поделиться списком</button>
+              <button id="exportButton">↓ &nbsp; Экспорт данных</button>
+              <button id="importButton">↑ &nbsp; Импорт данных</button>
+            </div>
+          </div>
+          <button class="primary-btn" id="newNote">＋ Новая заметка</button>
+        </div>
+      </div>
+
+      <div class="heading">
+        <div>
+          <h1 id="pageTitle">Все заметки</h1>
+          <p class="subtitle" id="pageSubtitle">Ваши мысли — в одном месте.</p>
+        </div>
+      </div>
+
+      <input class="search" id="search" type="search" placeholder="⌕  Поиск по заметкам, тегам и папкам…" aria-label="Поиск">
+      <div class="grid" id="notesGrid"></div>
+    </main>
+  </div>
+
+  <div class="overlay" id="editorOverlay" hidden>
+    <div class="editor" role="dialog" aria-modal="true" aria-label="Редактор заметки">
+      <div class="editor-head">
+        <strong id="editorHeading">Новая заметка</strong>
+        <button class="soft-btn" id="closeEditor">Закрыть</button>
+      </div>
+
+      <div class="editor-body">
+        <input class="title-input" id="noteTitle" maxlength="120" placeholder="Название заметки" aria-label="Название заметки">
+
+        <div class="text-row">
+          <textarea class="text-input" id="noteText" placeholder="Начните писать…"></textarea>
+
+          <div class="popover-wrap">
+            <button class="attach-plus" id="attachButton" title="Добавить" aria-label="Добавить вложение или список" aria-expanded="false">+</button>
+            <div class="popover attach-menu" id="attachMenu" hidden>
+              <button id="addImage">▧ &nbsp; Картинку</button>
+              <button id="addFile">▤ &nbsp; Файл</button>
+              <button id="addLink">↗ &nbsp; Ссылку</button>
+              <button id="addCheck">☑ &nbsp; Пункт списка</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="checksSection" hidden>
+          <div class="section-label">Список дел</div>
+          <div class="checks" id="checks"></div>
+          <button class="soft-btn" id="addAnotherCheck" style="margin-top:9px">＋ Добавить пункт</button>
+        </div>
+
+        <div id="attachmentsSection" hidden>
+          <div class="section-label">Вложения</div>
+          <div class="attachments" id="attachments"></div>
+        </div>
+
+        <div class="meta">
+          <label>Папка
+            <select id="noteFolder"></select>
+          </label>
+          <label>Теги через запятую
+            <input id="noteTags" placeholder="идеи, работа">
+          </label>
+          <label>Напомнить
+            <input id="noteReminder" type="datetime-local">
+          </label>
+        </div>
+      </div>
+
+      <div class="editor-actions">
+        <div class="left">
+          <button class="soft-btn" id="pinNote" title="Закрепить">☆ Закрепить</button>
+          <button class="soft-btn danger" id="deleteNote" hidden>Удалить</button>
+        </div>
+        <button class="primary-btn" id="saveNote">Сохранить</button>
+      </div>
+    </div>
+  </div>
+
+  <input type="file" id="imageInput" accept="image/*" multiple hidden>
+  <input type="file" id="fileInput" multiple hidden>
+  <input type="file" id="importInput" accept=".json,application/json" hidden>
+  <div class="toast" id="toast" hidden></div>
+
+  <script>
+    "use strict";
+
+    const $ = (selector) => document.querySelector(selector);
+    const DB_NAME = "beautiful-notes-db";
+    const MAX_FILE_BYTES = 5 * 1024 * 1024;
+
+    let db;
+    let notes = [];
+    let folders = ["Личные", "Работа", "Идеи"];
+    let currentView = "all";
+    let draft = null;
+    let toastTimer;
+
+    function uid() {
+      return crypto.randomUUID
+        ? crypto.randomUUID()
+        : Date.now() + "-" + Math.random().toString(36).slice(2);
+    }
+
+    function escapeHTML(value) {
+      return String(value ?? "").replace(/[&<>"']/g, char => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;",
+        '"': "&quot;", "'": "&#39;"
+      })[char]);
+    }
+
+    function notify(message) {
+      const el = $("#toast");
+      el.textContent = message;
+      el.hidden = false;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => el.hidden = true, 3500);
+    }
+
+    function openDB() {
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.open(DB_NAME, 1);
+        request.onupgradeneeded = () => {
+          const database = request.result;
+          database.createObjectStore("notes", { keyPath: "id" });
+          database.createObjectStore("settings", { keyPath: "key" });
+        };
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+    }
+
+    function transaction(store, mode, operation) {
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(store, mode);
+        const result = operation(tx.objectStore(store));
+        let value;
+        result.onsuccess = () => value = result.result;
+        tx.oncomplete = () => resolve(value);
+        tx.onerror = () => reject(tx.error);
+        tx.onabort = () => reject(tx.error);
+      });
+    }
+
+    const getAllNotes = () => transaction("notes", "readonly", store => store.getAll());
+    const putNote = note => transaction("notes", "readwrite", store => store.put(note));
+    const removeNote = id => transaction("notes", "readwrite", store => store.delete(id));
+    const getFolders = () => transaction("settings", "readonly", store => store.get("folders"));
+    const saveFolders = () => transaction("settings", "readwrite", store => store.put({ key: "folders", value: folders }));
+
+    function formatDate(timestamp) {
+      return new Intl.DateTimeFormat("ru", {
+        day: "numeric", month: "short", year: "numeric"
+      }).format(timestamp);
+    }
+
+    function closeSidebar() {
+      $("#sidebar").classList.remove("open");
+      $("#sidebarBackdrop").hidden = true;
+    }
+
+    function renderNav() {
+      $("#allCount").textContent = notes.length;
+      $("#pinnedCount").textContent = notes.filter(note => note.pinned).length;
+
+      document.querySelectorAll(".nav-item[data-view]").forEach(button => {
+        button.classList.toggle("active", button.dataset.view === currentView);
+      });
+
+      $("#folderNav").innerHTML = folders.map(folder => {
+        const count = notes.filter(note => note.folder === folder).length;
+        return `<button class="nav-item ${currentView === "folder:" + folder ? "active" : ""}"
+          data-folder="${escapeHTML(folder)}">
+          ▤ &nbsp; ${escapeHTML(folder)} <span class="count">${count}</span>
+        </button>`;
+      }).join("");
+    }
+
+    function visibleNotes() {
+      const query = $("#search").value.trim().toLocaleLowerCase("ru");
+      return notes.filter(note => {
+        if (currentView === "pinned" && !note.pinned) return false;
+        if (currentView.startsWith("folder:") && note.folder !== currentView.slice(7)) return false;
+        const text = [
+          note.title, note.text, note.folder,
+          ...(note.tags || []),
+          ...(note.checks || []).map(item => item.text)
+        ].join(" ").toLocaleLowerCase("ru");
+        return text.includes(query);
+      }).sort((a, b) =>
+        Number(Boolean(b.pinned)) - Number(Boolean(a.pinned)) ||
+        (b.updatedAt || 0) - (a.updatedAt || 0)
+      );
+    }
+
+    function render() {
+      renderNav();
+
+      const heading = currentView === "all"
+        ? "Все заметки"
+        : currentView === "pinned"
+          ? "Закреплённые"
+          : currentView.slice(7);
+
+      $("#pageTitle").textContent = heading;
+      const shown = visibleNotes();
+      $("#pageSubtitle").textContent =
+        `${shown.length} ${shown.length === 1 ? "заметка" : "заметок"} · Ваши мысли — в одном месте.`;
+
+      $("#notesGrid").innerHTML = shown.length
+        ? shown.map(note => {
+            const preview = note.text?.trim()
+              || (note.checks?.length ? `☑ Список дел · ${note.checks.length} пунктов` : "")
+              || (note.attachments?.length ? "▧ Вложения" : "Пустая заметка");
+
+            const tags = (note.tags || []).slice(0, 2)
+              .map(tag => `<span class="badge">#${escapeHTML(tag)}</span>`).join("");
+
+            return `<button class="card" data-id="${escapeHTML(note.id)}">
+              <div class="card-title">
+                <span>${escapeHTML(note.title || "Без названия")}</span>
+                <span style="color:#d5aa26">${note.pinned ? "★" : ""}</span>
+              </div>
+              <div class="card-preview">${escapeHTML(preview)}</div>
+              <div class="card-footer">
+                <span>${formatDate(note.updatedAt || Date.now())}</span>
+                ${note.folder ? `<span>· ${escapeHTML(note.folder)}</span>` : ""}
+                ${note.reminder ? "<span>· ♧</span>" : ""}
+                ${note.attachments?.length ? `<span>· ▧ ${note.attachments.length}</span>` : ""}
+                ${tags}
+              </div>
+            </button>`;
+          }).join("")
+        : `<div class="empty"><strong>Пока здесь пусто</strong>
+             Создайте заметку или попробуйте другой запрос.</div>`;
+    }
+
+    function renderFolderOptions() {
+      $("#noteFolder").innerHTML =
+        `<option value="">Без папки</option>` +
+        folders.map(folder =>
+          `<option value="${escapeHTML(folder)}">${escapeHTML(folder)}</option>`
+        ).join("");
+    }
+
+    function addCheckRow(item = { id: uid(), text: "", done: false }) {
+      const row = document.createElement("div");
+      row.className = "check-row";
+      row.dataset.id = item.id;
+
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.checked = !!item.done;
+      checkbox.setAttribute("aria-label", "Пункт выполнен");
+
+      const input = document.createElement("input");
+      input.type = "text";
+      input.placeholder = "Новый пункт";
+      input.value = item.text || "";
+
+      const remove = document.createElement("button");
+      remove.className = "soft-btn";
+      remove.type = "button";
+      remove.textContent = "×";
+      remove.title = "Удалить пункт";
+      remove.onclick = () => {
+        row.remove();
+        $("#checksSection").hidden = !$("#checks").children.length;
+      };
+
+      row.append(checkbox, input, remove);
+      $("#checks").append(row);
+      $("#checksSection").hidden = false;
+      return input;
+    }
+
+    function safeLink(url) {
+      try {
+        const parsed = new URL(url);
+        return ["https:", "http:"].includes(parsed.protocol) ? parsed.href : null;
+      } catch {
+        return null;
+      }
+    }
+
+    function renderAttachments() {
+      const container = $("#attachments");
+      container.replaceChildren();
+      $("#attachmentsSection").hidden = !draft.attachments.length;
+
+      draft.attachments.forEach((attachment, index) => {
+        const box = document.createElement("div");
+        box.className = "attachment";
+
+        if (attachment.kind === "image") {
+          const image = document.createElement("img");
+          image.src = attachment.data;
+          image.alt = attachment.name;
+          box.append(image);
+        } else {
+          const link = document.createElement("a");
+          const target = attachment.kind === "link"
+            ? safeLink(attachment.url)
+            : attachment.data;
+          link.href = target || "#";
+          link.textContent = (attachment.kind === "link" ? "↗ " : "▤ ") + attachment.name;
+          link.title = attachment.name;
+          if (attachment.kind === "link") {
+            link.target = "_blank";
+            link.rel = "noopener noreferrer";
+          } else {
+            link.download = attachment.name;
+          }
+          box.append(link);
+        }
+
+        const remove = document.createElement("button");
+        remove.className = "remove-attachment";
+        remove.type = "button";
+        remove.textContent = "×";
+        remove.title = "Удалить вложение";
+        remove.onclick = () => {
+          draft.attachments.splice(index, 1);
+          renderAttachments();
+        };
+
+        box.append(remove);
+        container.append(box);
+      });
+    }
+
+    function updatePinButton() {
+      $("#pinNote").textContent = draft.pinned ? "★ Закреплено" : "☆ Закрепить";
+    }
+
+    function openEditor(note = null) {
+      draft = note
+        ? structuredClone(note)
+        : {
+            id: uid(),
+            title: "",
+            text: "",
+            folder: currentView.startsWith("folder:") ? currentView.slice(7) : "",
+            tags: [],
+            checks: [],
+            attachments: [],
+            pinned: false,
+            reminder: "",
+            notified: false,
+            createdAt: Date.now()
+          };
+
+      draft.checks ||= [];
+      draft.attachments ||= [];
+      draft.tags ||= [];
+
+      renderFolderOptions();
+      $("#editorHeading").textContent = note ? "Редактировать заметку" : "Новая заметка";
+      $("#noteTitle").value = draft.title;
+      $("#noteText").value = draft.text;
+      $("#noteFolder").value = draft.folder || "";
+      $("#noteTags").value = draft.tags.join(", ");
+      $("#noteReminder").value = draft.reminder || "";
+      $("#deleteNote").hidden = !note;
+      $("#checks").replaceChildren();
+      draft.checks.forEach(addCheckRow);
+      $("#checksSection").hidden = !draft.checks.length;
+      renderAttachments();
+      updatePinButton();
+      $("#attachMenu").hidden = true;
+      $("#editorOverlay").hidden = false;
+      document.body.style.overflow = "hidden";
+      $("#noteTitle").focus();
+    }
+
+    function closeEditor() {
+      $("#editorOverlay").hidden = true;
+      $("#attachMenu").hidden = true;
+      document.body.style.overflow = "";
+      draft = null;
+    }
+
+    async function saveEditor() {
+      if (!draft) return;
+
+      draft.title = $("#noteTitle").value.trim();
+      draft.text = $("#noteText").value.trim();
+      draft.folder = $("#noteFolder").value;
+      draft.tags = [...new Set(
+        $("#noteTags").value.split(",").map(tag => tag.trim()).filter(Boolean)
+      )];
+      draft.checks = [...$("#checks").children].map(row => ({
+        id: row.dataset.id,
+        done: row.querySelector('[type="checkbox"]').checked,
+        text: row.querySelector('[type="text"]').value.trim()
+      })).filter(item => item.text);
+      const previousReminder = draft.reminder;
+      draft.reminder = $("#noteReminder").value;
+      if (draft.reminder !== previousReminder) draft.notified = false;
+      draft.updatedAt = Date.now();
+
+      try {
+        await putNote(draft);
+        notes = await getAllNotes();
+        closeEditor();
+        render();
+        notify("Заметка сохранена");
+      } catch (error) {
+        console.error(error);
+        notify("Не удалось сохранить. Возможно, закончилось место для вложений.");
+      }
+    }
+
+    function readAsDataURL(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function prepareImage(file) {
+      // Сжатие фотографий помогает экономить место в хранилище.
+      const original = await readAsDataURL(file);
+      try {
+        const image = new Image();
+        image.src = original;
+        await image.decode();
+
+        const scale = Math.min(1, 1600 / Math.max(image.width, image.height));
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.max(1, Math.round(image.width * scale));
+        canvas.height = Math.max(1, Math.round(image.height * scale));
+        canvas.getContext("2d").drawImage(image, 0, 0, canvas.width, canvas.height);
+
+        return canvas.toDataURL("image/jpeg", .83);
+      } catch {
+        return original;
+      }
+    }
+
+    async function handleFiles(files, imagesOnly) {
+      if (!draft) return;
+
+      for (const file of files) {
+        if (file.size > MAX_FILE_BYTES) {
+          notify(`Файл «${file.name}» больше 5 МБ и не добавлен`);
+          continue;
+        }
+        if (imagesOnly && !file.type.startsWith("image/")) continue;
+
+        try {
+          const data = imagesOnly
+            ? await prepareImage(file)
+            : await readAsDataURL(file);
+
+          draft.attachments.push({
+            id: uid(),
+            kind: imagesOnly ? "image" : "file",
+            name: file.name,
+            data
+          });
+        } catch {
+          notify(`Не удалось прочитать файл «${file.name}»`);
+        }
+      }
+
+      renderAttachments();
+    }
+
+    function shareText() {
+      const items = visibleNotes();
+      if (!items.length) return "";
+
+      return items.map(note => {
+        const checks = (note.checks || [])
+          .map(item => `${item.done ? "☑" : "☐"} ${item.text}`).join("\n");
+        const tags = (note.tags || []).map(tag => "#" + tag).join(" ");
+        const reminder = note.reminder
+          ? `Напомнить: ${note.reminder.replace("T", " ")}`
+          : "";
+
+        return [
+          note.title || "Без названия",
+          note.folder ? `Папка: ${note.folder}` : "",
+          note.text,
+          checks,
+          tags,
+          reminder
+        ].filter(Boolean).join("\n");
+      }).join("\n\n──────────\n\n");
+    }
+
+    async function shareNotes() {
+      $("#mainMenu").hidden = true;
+      const text = shareText();
+
+      if (!text) {
+        notify("Нет заметок, которыми можно поделиться");
+        return;
+      }
+
+      if (navigator.share) {
+        try {
+          await navigator.share({ title: "Мои заметки", text });
+          return;
+        } catch (error) {
+          if (error.name === "AbortError") return;
+        }
+      }
+
+      try {
+        await navigator.clipboard.writeText(text);
+        notify("Список заметок скопирован");
+      } catch {
+        const field = document.createElement("textarea");
+        field.value = text;
+        document.body.append(field);
+        field.select();
+        const copied = document.execCommand("copy");
+        field.remove();
+        notify(copied ? "Список заметок скопирован" : "Не удалось скопировать список");
+      }
+    }
+
+    function downloadJSON() {
+      const blob = new Blob(
+        [JSON.stringify({ version: 1, folders, notes }, null, 2)],
+        { type: "application/json" }
+      );
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "zametki-backup.json";
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      $("#mainMenu").hidden = true;
+    }
+
+    async function importJSON(file) {
+      try {
+        const data = JSON.parse(await file.text());
+        if (!Array.isArray(data.notes) || !Array.isArray(data.folders)) {
+          throw new Error("Неверный формат");
+        }
+
+        const incomingNotes = data.notes.filter(note =>
+          note && typeof note.id === "string" && typeof note.title === "string"
+        );
+
+        if (!confirm(`Импортировать ${incomingNotes.length} заметок? Заметки с одинаковым ID будут заменены.`)) return;
+
+        folders = [...new Set([
+          ...folders,
+          ...data.folders.filter(folder => typeof folder === "string" && folder.trim())
+        ])];
+        await saveFolders();
+        for (const note of incomingNotes) await putNote(note);
+
+        notes = await getAllNotes();
+        render();
+        notify(`Импортировано: ${incomingNotes.length}`);
+      } catch (error) {
+        console.error(error);
+        notify("Не удалось импортировать файл");
+      }
+    }
+
+    async function checkReminders() {
+      const now = Date.now();
+      const due = notes.filter(note =>
+        note.reminder && !note.notified &&
+        new Date(note.reminder).getTime() <= now
+      );
+
+      for (const note of due) {
+        note.notified = true;
+        try { await putNote(note); } catch (error) { console.error(error); }
+        notify(`Напоминание: ${note.title || "Без названия"}`);
+
+        if ("Notification" in window && Notification.permission === "granted") {
+          new Notification(note.title || "Напоминание", {
+            body: note.text?.slice(0, 120) || "Пора заглянуть в заметку"
+          });
+        }
+      }
+    }
+
+    function toggleMenu(button, menu) {
+      const willOpen = menu.hidden;
+      $("#mainMenu").hidden = true;
+      $("#attachMenu").hidden = true;
+      menu.hidden = !willOpen;
+      button.setAttribute("aria-expanded", String(willOpen));
+    }
+
+    async function init() {
+      try {
+        db = await openDB();
+        notes = await getAllNotes();
+        const saved = await getFolders();
+        if (saved?.value && Array.isArray(saved.value)) folders = saved.value;
+      } catch (error) {
+        console.error(error);
+        notify("Хранилище недоступно. Проверьте настройки браузера.");
+        $("#newNote").disabled = true;
+        return;
+      }
+
+      render();
+      checkReminders();
+      setInterval(checkReminders, 30000);
+
+      $("#newNote").onclick = () => openEditor();
+      $("#search").oninput = render;
+      $("#notesGrid").onclick = event => {
+        const card = event.target.closest("[data-id]");
+        if (card) {
+          const note = notes.find(item => item.id === card.dataset.id);
+          if (note) openEditor(note);
+        }
+      };
+
+      document.querySelectorAll(".nav-item[data-view]").forEach(button => {
+        button.onclick = () => {
+          currentView = button.dataset.view;
+          closeSidebar();
+          render();
+        };
+      });
+
+      $("#folderNav").onclick = event => {
+        const button = event.target.closest("[data-folder]");
+        if (!button) return;
+        currentView = "folder:" + button.dataset.folder;
+        closeSidebar();
+        render();
+      };
+
+      $("#addFolder").onclick = async () => {
+        const name = prompt("Название новой папки:")?.trim();
+        if (!name) return;
+        if (folders.some(folder => folder.toLocaleLowerCase("ru") === name.toLocaleLowerCase("ru"))) {
+          notify("Такая папка уже существует");
+          return;
+        }
+        folders.push(name);
+        await saveFolders();
+        render();
+      };
+
+      $("#mobileMenu").onclick = () => {
+        $("#sidebar").classList.add("open");
+        $("#sidebarBackdrop").hidden = false;
+      };
+      $("#sidebarBackdrop").onclick = closeSidebar;
+
+      $("#menuButton").onclick = () =>
+        toggleMenu($("#menuButton"), $("#mainMenu"));
+      $("#attachButton").onclick = () =>
+        toggleMenu($("#attachButton"), $("#attachMenu"));
+
+      $("#shareSide").onclick = () => {
+        closeSidebar();
+        shareNotes();
+      };
+      $("#shareMenu").onclick = shareNotes;
+      $("#exportButton").onclick = downloadJSON;
+      $("#importButton").onclick = () => {
+        $("#mainMenu").hidden = true;
+        $("#importInput").click();
+      };
+      $("#importInput").onchange = async event => {
+        if (event.target.files[0]) await importJSON(event.target.files[0]);
+        event.target.value = "";
+      };
+
+      $("#closeEditor").onclick = closeEditor;
+      $("#editorOverlay").onclick = event => {
+        if (event.target === $("#editorOverlay")) closeEditor();
+      };
+      $("#saveNote").onclick = saveEditor;
+
+      $("#deleteNote").onclick = async () => {
+        if (!draft || !confirm("Удалить эту заметку?")) return;
+        try {
+          await removeNote(draft.id);
+          notes = await getAllNotes();
+          closeEditor();
+          render();
+          notify("Заметка удалена");
+        } catch {
+          notify("Не удалось удалить заметку");
+        }
+      };
+
+      $("#pinNote").onclick = () => {
+        draft.pinned = !draft.pinned;
+        updatePinButton();
+      };
+
+      $("#addCheck").onclick = () => {
+        $("#attachMenu").hidden = true;
+        addCheckRow().focus();
+      };
+      $("#addAnotherCheck").onclick = () => addCheckRow().focus();
+
+      $("#addImage").onclick = () => {
+        $("#attachMenu").hidden = true;
+        $("#imageInput").click();
+      };
+      $("#addFile").onclick = () => {
+        $("#attachMenu").hidden = true;
+        $("#fileInput").click();
+      };
+      $("#imageInput").onchange = async event => {
+        await handleFiles([...event.target.files], true);
+        event.target.value = "";
+      };
+      $("#fileInput").onchange = async event => {
+        await handleFiles([...event.target.files], false);
+        event.target.value = "";
+      };
+
+      $("#addLink").onclick = () => {
+        $("#attachMenu").hidden = true;
+        let url = prompt("Вставьте ссылку:");
+        if (!url) return;
+        url = url.trim();
+        if (!/^[a-z]+:\/\//i.test(url)) url = "https://" + url;
+        const valid = safeLink(url);
+        if (!valid) {
+          notify("Нужна ссылка вида https://example.com");
+          return;
+        }
+        const name = prompt("Название ссылки:", valid) || valid;
+        draft.attachments.push({ id: uid(), kind: "link", name, url: valid });
+        renderAttachments();
+      };
+
+      document.addEventListener("click", event => {
+        if (!event.target.closest("#menuButton, #mainMenu")) {
+          $("#mainMenu").hidden = true;
+          $("#menuButton").setAttribute("aria-expanded", "false");
+        }
+        if (!event.target.closest("#attachButton, #attachMenu")) {
+          $("#attachMenu").hidden = true;
+          $("#attachButton").setAttribute("aria-expanded", "false");
+        }
+      });
+
+      document.addEventListener("keydown", event => {
+        if (event.key === "Escape") {
+          $("#mainMenu").hidden = true;
+          $("#attachMenu").hidden = true;
+          if (!$("#editorOverlay").hidden) closeEditor();
+          closeSidebar();
+        }
+
+        if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s"
+            && !$("#editorOverlay").hidden) {
+          event.preventDefault();
+          saveEditor();
+        }
+      });
+    }
+
+    init();
+  </script>
+</body>
+</html>
